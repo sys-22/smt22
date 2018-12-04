@@ -20,7 +20,7 @@ import (
 func createBotClient(c context.Context, client *http.Client) (bot *linebot.Client, err error) {
 	var (
 		channelSecret = os.Getenv("dd6c195e52c72d80b7c32098843f9aba")
-		channelToken  = os.Getenv("9DaHPUurWQB3oZVvk9iVSWatRaTSR/qMBpGMs3HwFzfOkAGXiLOpp1cZs6F2SydS39U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqijpiKGsrCmH/JFY1OXKvgC3WtMfBB+fIF9G0osw3tuLAdB04t89/1O/w1cDnyilFU=")
+		channelToken  = os.Getenv("UfcIQQ/Knkg3E7DLS+0u0DL2+qZWSyfiObJkgLS09QbUx2kCc0GJHkffxAfHWItI39U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqgeYccRv1aKdju5l5RONh9Hvp28pLNRhfLUHsw2xL2bGQdB04t89/1O/w1cDnyilFU=")
 	)
 
 
