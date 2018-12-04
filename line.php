@@ -1,6 +1,6 @@
 
-define("CHANNEL_ACCESS_TOKEN", 'i/wwsOJ/KkkxnpPi+m5TQZP779JbDvwC2bHwXqQhTVOFDLCuGj4uTMrINt52QM9239U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqhRZaf442A/HuOiezFl0S2VRxr2o/UQFo6I2fl2yxQBxAdB04t89/1O/w1cDnyilFU=');
-define("CHANNEL_SECRET", '40a52cd250f92c4f564217b593766ee6');
+define("CHANNEL_ACCESS_TOKEN", "i/wwsOJ/KkkxnpPi+m5TQZP779JbDvwC2bHwXqQhTVOFDLCuGj4uTMrINt52QM9239U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqhRZaf442A/HuOiezFl0S2VRxr2o/UQFo6I2fl2yxQBxAdB04t89/1O/w1cDnyilFU=");
+define("CHANNEL_SECRET", "40a52cd250f92c4f564217b593766ee6");
 
 $contents = file_get_contents('php://input');
 $json = json_decode($contents);
