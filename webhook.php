@@ -45,7 +45,7 @@ class LineMessage{
 
   function reply_message(){
 
-    $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder($this->profile_array["displayName"]."‚³‚ñ‚±‚ñ‚É‚¿‚ÍI!");
+    $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder($this->profile_array["displayName"]."‚³‚ñ‚±‚ñ‚É‚¿‚ÍI");
     $response = $this->bot->replyMessage($this->replyToken, $textMessageBuilder);   
   }
 
