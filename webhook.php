@@ -1,200 +1,60 @@
 
-package bot
+define("CHANNEL_ACCESS_TOKEN", 'UfcIQQ/Knkg3E7DLS+0u0DL2+qZWSyfiObJkgLS09QbUx2kCc0GJHkffxAfHWItI39U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqgeYccRv1aKdju5l5RONh9Hvp28pLNRhfLUHsw2xL2bGQdB04t89/1O/w1cDnyilFU=');
+define("CHANNEL_SECRET", 'dd6c195e52c72d80b7c32098843f9aba');
 
-import (
-	"fmt"
-	"net/http"
-	"os"
+$contents = file_get_contents('php://input');
+$json = json_decode($contents);
+$event = $json->events[0];
 
-	"golang.org/x/net/context"
+$httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient(CHANNEL_ACCESS_TOKEN);
+$bot = new \LINE\LINEBot($httpClient, ['channelSecret' => CHANNEL_SECRET]);
 
-	"github.com/line/line-bot-sdk-go/linebot"
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/log"
-	"google.golang.org/appengine/urlfetch"
-)
-
-/**
- * LINE Botクライアントインスタンスを生成
- */
-func createBotClient(c context.Context, client *http.Client) (bot *linebot.Client, err error) {
-	var (
-		channelSecret = os.Getenv("dd6c195e52c72d80b7c32098843f9aba")
-		channelToken  = os.Getenv("UfcIQQ/Knkg3E7DLS+0u0DL2+qZWSyfiObJkgLS09QbUx2kCc0GJHkffxAfHWItI39U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqgeYccRv1aKdju5l5RONh9Hvp28pLNRhfLUHsw2xL2bGQdB04t89/1O/w1cDnyilFU=")
-	)
-
-
-	bot, err = linebot.New(channelSecret, channelToken, linebot.WithHTTPClient(client)) //Appengineのurlfetchを使用する
-	if err != nil {
-		log.Errorf(c, "Error occurred at create linebot client: %v", err)
-		return bot, err
-	}
-	return bot, nil
+// 個人トークの場合はグループに招待するようにメッセージ表示
+if ($event->source->type != 'group') {
+  $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('グループに招待してください！');
 }
 
-/**
- * Get event sender's id
- */
-func getSenderID(c context.Context, event *linebot.Event) string {
-	switch event.Source.Type {
-	case linebot.EventSourceTypeGroup:
-		return event.Source.GroupID
-	case linebot.EventSourceTypeRoom:
-		return event.Source.RoomID
-	case linebot.EventSourceTypeUser:
-		return event.Source.UserID
-	}
-	log.Warningf(c, "Can not get sender id. type: %v", event.Source.Type)
-	return ""
-}
+else {
+  try {
+    // メッセージを書き込んだユーザ情報を取得
+    $response = $bot->getProfile($event->source->userId);
 
-/**
- * 送信者の表示名を取得する
- *
- * ユーザしか取得できないので、ルームおよびグループではidをそのまま返す
- * グループメンバーのUserIDの場合、そのユーザが直接Botと友だち登録していなければ取得できない
- */
-func getSenderName(c context.Context, bot *linebot.Client, from string) string {
-	if len(from) == 0 {
-		log.Warningf(c, "Parameter `mid` was not specified.")
-		return from
-	}
-	if from[0:1] == "U" {
-		senderProfile, err := bot.GetProfile(from).Do()
-		if err != nil {
-			log.Warningf(c, "Error occurred at get sender profile. from: %v, err: %v", from, err)
-			return from
-		}
-		return senderProfile.DisplayName
-	}
-	return from
-}
+    if ($response->isSucceeded()) {
+      $profile = $response->getJSONDecodedBody();
+      $user_display_name = $profile['displayName'];
+      $user_picture_url = $profile['pictureUrl'];
+      $user_status_message = $profile['statusMessage'];
+      $fileUrl = "";
 
-/**
- * LINE Messaging APIからのコールバックをハンドリング
- */
-func lineBotCallback(w http.ResponseWriter, r *http.Request) {
+      // メッセージタイプが画像だった場合は画像を保存
+      if ($event->message->type == 'image') {
+        function uploadImageThenGetUrl ($rawBody) {
+          $im = imagecreatefromstring($rawBody);
 
-	c := appengine.NewContext(r)
-	bot, err := createBotClient(c, urlfetch.Client(c))
-	if err != nil {
-		return
-	}
+          if ($im !== false) {
+            $filename = date("Ymd-His") . '-' . mt_rand() . '.jpg';
+            imagejpeg($im, "images/uploads/" . $filename);
+          }
 
-	events, err := bot.ParseRequest(r)
-	if err != nil {
-		if err == linebot.ErrInvalidSignature {
-			log.Warningf(c, "Linebot request status: 400")
-			w.WriteHeader(400)
-		} else {
-			log.Warningf(c, "linebot request status: 500\n\terror: %v", err)
-			w.WriteHeader(500)
-		}
-		return
-	}
+          else {
+            error_log("fail to create image.");
+          }
+        
+          return $filename;
+        }
 
-	for _, event := range events {
-		switch event.Type {
-		case linebot.EventTypeFollow, linebot.EventTypeJoin:
-			sender := getSenderName(c, bot, getSenderID(c, event))
-			message := sender + " さん、友だち登録ありがとうございます！"
-			if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message)).Do(); err != nil {
-				log.Errorf(c, "Error occurred at reply-message for follow/join. err: %v", err)
-			}
+        $res = $bot->getMessageContent($event->message->id);
+        $fileUrl = uploadImageThenGetUrl($res->getRawBody());
+      }
+    }
 
-		case linebot.EventTypeUnfollow, linebot.EventTypeLeave:
-			sender := getSenderName(c, bot, getSenderID(c, event))
-			message := sender + " さん、さようなら"
-			if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(message)).Do(); err != nil {
-				log.Errorf(c, "Error occurred at reply-message for unfollow/leave. err: %v", err)
-			}
-
-		case linebot.EventTypeMessage:
-			switch message := event.Message.(type) {
-			case *linebot.TextMessage:
-				var replyMessage string
-				if message.Text == "/version" {
-					//バージョン
-					replyMessage = "version: " + version
-
-				} else if message.Text == "/mention" || message.Text == "/mention1" {
-					//IDでメンション
-					replyMessage = "@" + event.Source.UserID + " メンションになっていますか？"
-
-				} else if message.Text == "/mention2" {
-					//名前でメンション
-					sender := getSenderName(c, bot, event.Source.UserID)
-					replyMessage = "@" + sender + " メンションになっていますか？"
-
-				} else if message.Text == "/profile" {
-					//ユーザのプロファイルを取得（旧API）
-					senderProfile, err2 := bot.GetProfile(event.Source.UserID).Do()
-					if err2 != nil {
-						replyMessage = fmt.Sprintf("GetProfile()でプロファイルが取得できませんでした\nerr: %v", err2)
-					} else {
-						replyMessage = fmt.Sprintf("UserID: %v\nDisplayName: %v\nPictureURL: %v\nStatusMessage: %v",
-							senderProfile.UserID,
-							senderProfile.DisplayName,
-							senderProfile.PictureURL,
-							senderProfile.StatusMessage,
-						)
-					}
-
-				} else if message.Text == "/profile2" {
-					//ユーザのプロファイルを取得（新API）
-					switch event.Source.Type {
-					case linebot.EventSourceTypeGroup:
-						senderProfile, err2 := bot.GetGroupMemberProfile(event.Source.GroupID, event.Source.UserID).Do()
-						if err2 != nil {
-							replyMessage = fmt.Sprintf("GetGroupMemberProfile()でプロファイルが取得できませんでした\nerr: %v", err2)
-						} else {
-							replyMessage = fmt.Sprintf("UserID: %v\nDisplayName: %v\nPictureURL: %v\nStatusMessage: %v",
-								senderProfile.UserID,
-								senderProfile.DisplayName,
-								senderProfile.PictureURL,
-								senderProfile.StatusMessage,
-							)
-						}
-					case linebot.EventSourceTypeRoom:
-						senderProfile, err2 := bot.GetRoomMemberProfile(event.Source.RoomID, event.Source.UserID).Do()
-						if err2 != nil {
-							replyMessage = fmt.Sprintf("GetRoomMemberProfile()でプロファイルが取得できませんでした\nerr: %v", err2)
-						} else {
-							replyMessage = fmt.Sprintf("UserID: %v\nDisplayName: %v\nPictureURL: %v\nStatusMessage: %v",
-								senderProfile.UserID,
-								senderProfile.DisplayName,
-								senderProfile.PictureURL,
-								senderProfile.StatusMessage,
-							)
-						}
-					}
-
-				} else {
-					//オウム返し
-					sender := getSenderName(c, bot, event.Source.UserID)
-					replyMessage = sender + "さんの発言:\n" + message.Text
-				}
-				if _, err = bot.ReplyMessage(event.ReplyToken, linebot.NewTextMessage(replyMessage)).Do(); err != nil {
-					log.Errorf(c, "Error occurred at reply-message. err: %v", err)
-				}
-			}
-
-		default:
-			log.Debugf(c, "Unsupported event type. type: %v", event.Type)
-		}
-	}
-}
-
-//
-func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "version: %v", version)
-}
-
-//
-func init() {
-	//LINE Bot
-	http.HandleFunc("/linebot/callback", lineBotCallback)
-
-	//Web App
-	http.HandleFunc("/", index)
+    // ユーザ情報やメッセージをデータベースに保存
+    $pdo = new PDO('mysql:host=localhost;dbname=suzukidb;charset=utf8','suzuki','sysmet22',
+    array(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC));
+    $stmt = $pdo -> prepare("INSERT INTO talks (id, type, group_id, user_id, user_display_name, user_picture_url, user_status_message, talk_type, upload_image_name, time, reply_token, message_id, message_type, message_text, created_at) VALUES ('', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)");
+    $stmt->execute(array($event->type, $event->source->groupId, $event->source->userId, $user_display_name, $user_picture_url, $user_status_message, $event->source->type, @$fileUrl, $event->timestamp, $event->replyToken, $event->message->id, $event->message->type, $event->message->text));
+  }
+  catch (PDOException $e) {
+    exit('データベース接続失敗。'.$e->getMessage());
+  }
 }
