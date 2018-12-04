@@ -11,7 +11,7 @@ $bot = new \LINE\LINEBot($httpClient, ['channelSecret' => CHANNEL_SECRET]);
 
 // 個人トークの場合はグループに招待するようにメッセージ表示
 if ($event->source->type != 'group') {
-  $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('グループに招待してください！');
+  $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder('グループに招待してください！!');
 }
 
 else {
