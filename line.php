@@ -49,7 +49,7 @@ else {
     }
 
     // ユーザ情報やメッセージをデータベースに保存
-    $pdo = new PDO('mysql:host=localhost;dbname=suzukidb;charset=utf8','suzuki.talks','sysmet22',
+    $pdo = new PDO('mysql:host=localhost; dbname=suzukidb.talks; charset=utf8','suzuki','sysmet22',
     array(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC));
     $stmt = $pdo -> prepare("INSERT INTO talks (id, type, group_id, user_id, user_display_name, user_picture_url, user_status_message, talk_type, upload_image_name, time, reply_token, message_id, message_type, message_text, created_at) VALUES ('', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)");
     $stmt->execute(array($event->type, $event->source->groupId, $event->source->userId, $user_display_name, $user_picture_url, $user_status_message, $event->source->type, @$fileUrl, $event->timestamp, $event->replyToken, $event->message->id, $event->message->type, $event->message->text));
