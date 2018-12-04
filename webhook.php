@@ -1,49 +1,64 @@
-<?php
-/**
- * Copyright 2016 LINE Corporation
- *
- * LINE Corporation licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-require_once('./LINEBotTiny.php');
-$channelAccessToken = 'sgklWoT3idrzCYNBj+dmzQ24fkFGvF0eNoKGZqgVg237+j1/fM/9XFyQXPb2Je5Z7FgeX9wPEl0KLOaYMwErgLDfHcT0pYxk3S5e2tGHYd+c2xjkW0nJ5lWZ2VtJakAt5fxhz81WFZ36em9VfB8fPAdB04t89/1O/w1cDnyilFU=
-';
-$channelSecret = '214a3ce5066c7517d355b43cd69fd25a';
-$client = new LINEBotTiny($channelAccessToken, $channelSecret);
-foreach ($client->parseEvents() as $event) {
-    switch ($event['type']) {
-        case 'message':
-            $message = $event['message'];
-            switch ($message['type']) {
-                case 'text':
-                    $client->replyMessage(array(
-                        'replyToken' => $event['replyToken'],
-                        'messages' => array(
-                            array(
-                                'type' => 'text',
-                                'text' => $message['text']
-                            )
-                        )
-                    ));
-                    break;
-                default:
-                    error_log("Unsupporeted message type: " . $message['type']);
-                    break;
-            }
-            break;
-        default:
-            error_log("Unsupporeted event type: " . $event['type']);
-            break;
-    }
-};
+new Bot;
 
-?>
+class Bot{
+  private $channel_id = "1627227117";
+  private $channel_secret = "dd6c195e52c72d80b7c32098843f9aba";
+  private $mid = "9DaHPUurWQB3oZVvk9iVSWatRaTSR/qMBpGMs3HwFzfOkAGXiLOpp1cZs6F2SydS39U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqijpiKGsrCmH/JFY1OXKvgC3WtMfBB+fIF9G0osw3tuLAdB04t89/1O/w1cDnyilFU=";
+  private $header;
+
+  private $from;
+  private $text;
+  private $content_type;
+
+  private $name;
+
+  public function __construct(){
+
+    $json_string = file_get_contents('php://input');
+    $receive = json_decode($json_string);
+    $this->from = $receive->result{0}->content->from;
+    $this->text = $receive->result{0}->content->text;
+    $this->content_type = $receive->result[0]->content->contentType;
+
+    $this->header = array(
+      "Content-Type: application/json; charser=UTF-8",
+      "X-Line-ChannelID:" . $this->channel_id,
+      "X-Line-ChannelSecret:" . $this->channel_secret,
+      "X-Line-Trusted-User-With-ACL:" . $this->mid,
+    );
+
+    $this->getting_user_profile_rinformation($this->from);
+    $this->sending_messages($this->name);
+
+  }
+
+  private function sending_messages($message){
+    $url = "https://trialbot-api.line.me/v1/events";
+
+    $data = array("to" => array($this->from), "toChannel" => 1383378250, "eventType" => "138311608800106203", "content" => array("contentType" => 1, "toType" => 1, "text" => $message));
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $this->header);
+    $result = curl_exec($ch);
+    curl_close($ch);
+  }
+
+  private function getting_user_profile_rinformation($mid) {
+    $url = "https://trialbot-api.line.me/v1/profiles?mids={$mid}";
+
+    $curl = curl_init($url);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $this->header);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $output = curl_exec($curl);
+    $receive = json_decode($output);
+    error_log($output);
+
+    $this->name = $receive->contacts[0]->displayName; //displayName=>名前 pictureUrl=>プロフィール画像 statusMessage=>自己紹介文
+    $this->name .= "さんこんにちは！";
+
+    file_put_contents("json.php", $output);
+  }
+}
