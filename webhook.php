@@ -1,5 +1,5 @@
 
- package bot
+package bot
 
 import (
 	"fmt"
@@ -22,6 +22,7 @@ func createBotClient(c context.Context, client *http.Client) (bot *linebot.Clien
 		channelSecret = os.Getenv("dd6c195e52c72d80b7c32098843f9aba")
 		channelToken  = os.Getenv("9DaHPUurWQB3oZVvk9iVSWatRaTSR/qMBpGMs3HwFzfOkAGXiLOpp1cZs6F2SydS39U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqijpiKGsrCmH/JFY1OXKvgC3WtMfBB+fIF9G0osw3tuLAdB04t89/1O/w1cDnyilFU=")
 	)
+
 
 	bot, err = linebot.New(channelSecret, channelToken, linebot.WithHTTPClient(client)) //Appengine‚Ìurlfetch‚ðŽg—p‚·‚é
 	if err != nil {
@@ -178,3 +179,22 @@ func lineBotCallback(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
+		default:
+			log.Debugf(c, "Unsupported event type. type: %v", event.Type)
+		}
+	}
+}
+
+//
+func index(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "version: %v", version)
+}
+
+//
+func init() {
+	//LINE Bot
+	http.HandleFunc("/linebot/callback", lineBotCallback)
+
+	//Web App
+	http.HandleFunc("/", index)
+}
