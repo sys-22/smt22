@@ -1,3 +1,4 @@
+<?php
 new Bot;
 
 class Bot{
@@ -62,3 +63,4 @@ class Bot{
     file_put_contents("json.php", $output);
   }
 }
+?>
