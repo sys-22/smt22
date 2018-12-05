@@ -1,4 +1,12 @@
 <?php
+
+<a href="https://access.line.me/oauth2/v2.1/authorize
+            ?response_type=code
+            &client_id= 1627227117
+            &redirect_uri=https://smt22.herokuapp.com/webhook.php
+            &state=—”
+            &scope=profile">LINEƒƒOƒCƒ“‚·‚é</a>
+
 $postData = array(
   'grant_type'    => 'authorization_code',
   'code'          => $_GET['code'],
