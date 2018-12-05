@@ -56,8 +56,8 @@ class Bot{
     $receive = json_decode($output);
     error_log($output);
 
-    $this->name = $receive->contacts[0]->displayName; //displayName=>–¼‘O pictureUrl=>ƒvƒƒtƒB[ƒ‹‰æ‘œ statusMessage=>©ŒÈĞ‰î•¶
-    $this->name .= "‚³‚ñ‚±‚ñ‚É‚¿‚ÍI";
+    $this->name = $receive->contacts[0]->displayName; //displayName=>åå‰ pictureUrl=>ãƒ—ãƒ­ãƒ•ã‚£ãƒ¼ãƒ«ç”»åƒ statusMessage=>è‡ªå·±ç´¹ä»‹æ–‡
+    $this->name .= "ã•ã‚“ã“ã‚“ã«ã¡ã¯ï¼";
 
     file_put_contents("json.php", $output);
   }
