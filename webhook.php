@@ -1,39 +1,57 @@
 
 <?php
 
-$postData = array(
-  'grant_type'    => 'authorization_code',
-  'code'          => $_GET['code'],
-  'redirect_uri'  => 'smt22.herokuapp.com/webhook.php',
-  'client_id'     => '1627227117',
-  'client_secret' => 'fb18e7478baee5c48f1cfad36786270f'
-);
+require_once('./vendor/autoload.php');
 
-$ch = curl_init();
+new LineMessage;
 
-curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
-curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/oauth2/v2.1/token');
-curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postData));
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+class LineMessage{
 
-$response = curl_exec($ch);
-curl_close($ch);
+  private $token = 's2HtA7+7R5R6LBD7KlyP0lSEJUCiS2UgffJU/QyF0kz6PjEcw/yWaQKU4VroIXo039U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqilTuNrC5Dyk/0O51k1jfGquHExFtwLcwESii+ze0g9aAdB04t89/1O/w1cDnyilFU=';
+  private $secret = 'fb18e7478baee5c48f1cfad36786270f';
+  private $profile_array = array(); //プロフィールを格納する配列 displayName:表示名 userId:ユーザ識別子 pictureUrl:画像URL statusMessage:ステータスメッセージ
 
-$json = json_decode($response);
-$accessToken = $json->access_token;
+  private $replyToken;
+  private $userId;
+  private $httpClient;
+  private $bot;
 
-$ch = curl_init();
+  function __construct(){
 
-curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer ' . $accessToken));
-curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/profile');
-curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $json_string = file_get_contents('php://input');
+    $jsonObj = json_decode($json_string);
+    $this->userId = $jsonObj->{"events"}[0]->{"source"}->{"userId"};
+    $this->replyToken = $jsonObj->{"events"}[0]->{"replyToken"};
 
-$response = curl_exec($ch);
-curl_close($ch);
+    $this->httpClient = new \LINE\LINEBot\HTTPClient\CurlHTTPClient($this->token);
+    $this->bot = new \LINE\LINEBot($this->httpClient, ['channelSecret' => $this->secret]);
 
-$json = json_decode($response);
+    $this->get_profile();
 
-echo $response;
+  }
+
+  function get_profile(){
+
+    $response = $this->bot->getProfile($this->userId);
+
+    if ($response->isSucceeded()) {
+
+      $profile = $response->getJSONDecodedBody();
+      $displayName = $profile['displayName'];
+      $userId = $profile['userId'];
+      $pictureUrl = $profile['pictureUrl'];
+      $statusMessage = $profile['statusMessage'];
+      $this->profile_array = array("displayName"=>$displayName,"userId"=>$userId,"pictureUrl"=>$pictureUrl,"statusMessage"=>$statusMessage);
+      $this->reply_message();
+    }
+  }
+
+  function reply_message(){
+
+    $textMessageBuilder = new \LINE\LINEBot\MessageBuilder\TextMessageBuilder($this->profile_array["displayName"]."さんこんにちは！");
+    $response = $this->bot->replyMessage($this->replyToken, $textMessageBuilder);   
+  }
+
+}
+
 ?>
