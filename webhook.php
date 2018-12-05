@@ -6,8 +6,8 @@ new LineMessage;
 
 class LineMessage{
 
-  private $token = '[7xPGjrgg2r4z66m+w8CXEnisIdoqQnZe7ORIX/KPZFrnLl+lA1UWsv1cs5ufHFOn39U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqjHLtkU5oqF8jgOWPlZEEihlu+KaQ2zHNqhhhl8VThmtgdB04t89/1O/w1cDnyilFU=]';
-  private $secret = '[fb18e7478baee5c48f1cfad36786270f]';
+  private $token = '7xPGjrgg2r4z66m+w8CXEnisIdoqQnZe7ORIX/KPZFrnLl+lA1UWsv1cs5ufHFOn39U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqjHLtkU5oqF8jgOWPlZEEihlu+KaQ2zHNqhhhl8VThmtgdB04t89/1O/w1cDnyilFU=';
+  private $secret = 'fb18e7478baee5c48f1cfad36786270f';
   private $profile_array = array(); //プロフィールを格納する配列 displayName:表示名 userId:ユーザ識別子 pictureUrl:画像URL statusMessage:ステータスメッセージ
 
   private $replyToken;
