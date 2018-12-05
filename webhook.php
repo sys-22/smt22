@@ -33,7 +33,7 @@ class Bot{
   }
 
   private function sending_messages($message){
-    $url = "https://trialbot-api.line.me/v1/events";
+    $url = "https://smt22.herokuapp.com/v1/events";
 
     $data = array("to" => array($this->from), "toChannel" => 1383378250, "eventType" => "138311608800106203", "content" => array("contentType" => 1, "toType" => 1, "text" => $message));
     $ch = curl_init($url);
@@ -47,7 +47,7 @@ class Bot{
   }
 
   private function getting_user_profile_rinformation($mid) {
-    $url = "https://trialbot-api.line.me/v1/profiles?mids={$mid}";
+    $url = "https://smt22.herokuapp.com/v1/events/v1/profiles?mids={$mid}";
 
     $curl = curl_init($url);
     curl_setopt($curl, CURLOPT_HTTPHEADER, $this->header);
