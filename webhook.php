@@ -4,7 +4,7 @@ new Bot;
 class Bot{
   private $channel_id = "1627227117";
   private $channel_secret = "fb18e7478baee5c48f1cfad36786270f";
-  private $mid = "s2HtA7+7R5R6LBD7KlyP0lSEJUCiS2UgffJU/QyF0kz6PjEcw/yWaQKU4VroIXo039U4VwZV4VMfe49EycwgTa9Rg8xlNnk4rGh5jlkZdqilTuNrC5Dyk/0O51k1jfGquHExFtwLcwESii+ze0g9aAdB04t89/1O/w1cDnyilFU=";
+  private $mid = "U062b8e88bed9a2b49e723c7396eb7b6e";
   private $header;
 
   private $from;
