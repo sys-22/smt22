@@ -35,5 +35,5 @@ curl_close($ch);
 
 $json = json_decode($response);
 
-echo $ch;
+echo $response;
 ?>
