@@ -1,3 +1,4 @@
+<?php
 $postData = array(
   'grant_type'    => 'authorization_code',
   'code'          => $_GET['code'],
@@ -31,3 +32,6 @@ $response = curl_exec($ch);
 curl_close($ch);
 
 $json = json_decode($response);
+
+echo $json;
+?>
